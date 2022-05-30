@@ -5,6 +5,8 @@
 ## Created Date: 23.05.2022
 
 ## EXAMPLE
+# ./apidsl.sh -h
+# ./apidsl.sh --help
 # ./apidsl.sh example2.txt
 # ./apidsl.sh example/example3.txt
 # ./apidsl.sh "http("https://www.rezydent.de/").xpath("title")"
@@ -12,27 +14,65 @@
 
 ## CONFIG
 INPUT_FILE=$1
+
 MODULE="apidsl"
+FILE_EXT=".txt"
+CMD_EXT=".sh"
+CONFIG_FILE=".${MODULE}"
+CONFIG_DEFAULT="${MODULE}${FILE_EXT}"
+CONFIG_DEV="${MODULE}.dev${FILE_EXT}"
+CONFIG_TEST="${MODULE}.test${FILE_EXT}"
+LOGS=".${MODULE}.logs${FILE_EXT}"
 INPUT_FOLDER=".${MODULE}"
 COMMAND_LANGUAGE="bash"
-COMMAND_FOLDER="${MODULE}/${COMMAND_LANGUAGE}"
 CACHE_FOLDER=".${MODULE}.cache"
+HISTORY_FOLDER=".${MODULE}.history"
+
+# START
+echo "`date +"%T.%3N"` START" > $LOGS
 mkdir -p "$CACHE_FOLDER"
 #
-INPUT_FTIME="$(date +%s).txt"
-INPUT_FILE_PATH="$INPUT_FOLDER/$INPUT_FTIME"
 
-if [ ! -f "$INPUT_FILE" ]; then
-  # IF file not exist then create file with the input text
-  echo "$1" >$INPUT_FILE_PATH
-else
-  # if file exist copy to folder
-  cp $INPUT_FILE $INPUT_FILE_PATH
+if [ "$CMD" == "-h" ] || [ "$CMD" == "--help" ]; then
+  echo "set config for:"
+  echo "init - the default config, for customers"
+  echo "dev - development packages, for contributors and developers"
+  echo "test - for testing the project"
+  echo ""
+  exit
 fi
+if [ "$CMD" == "init" ]; then
+  echo -n "$CONFIG_DEFAULT" > "$CONFIG_FILE"
+  exit
+fi
+if [ "$CMD" == "dev" ]; then
+  echo -n "$CONFIG_DEV" > "$CONFIG_FILE"
+  exit
+fi
+if [ "$CMD" == "test" ]; then
+  echo -n "$CONFIG_TEST" > "$CONFIG_FILE"
+  exit
+fi
+#
+PROJECT_LIST=$2
+[ -z "$PROJECT_LIST" ] && [ -f "$CONFIG_FILE" ] && PROJECT_LIST=$(cat "$CONFIG_FILE")
+[ -z "$PROJECT_LIST" ] && PROJECT_LIST="$CONFIG_DEFAULT"
+[ ! -f "$PROJECT_LIST" ] && echo -n "" > "$CONFIG_DEFAULT" && echo "$LOGS" >> ".gitignore"
+#
+FTIME="$(date +%s)"
+INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
+INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
+echo "${INPUT_FILE}" > ${INPUT_FILE_PATH}
 
-CACHE_FILE="$INPUT_FILE_PATH.cache.txt"
-BASH_FILE="$INPUT_FILE_PATH.sh"
-BASH_LOOP_FILE="$CACHE_FOLDER/$INPUT_FTIME.loop.sh"
+CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
+BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
+BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
+
+PROJECT_PATH=$(pwd)
+#echo $PROJECT_PATH
+[ -z "$INPUT_FILE_PATH" ] && echo "INPUT_FILE is empty" && exit
+echo "#!/bin/bash" >$BASH_FILE
+
 #Create temporary file with new line in place
 #cat $INPUT_FILE | sed -e "s/)/\n/" > $CACHE_FILE
 DSL_HASH="#"
@@ -46,13 +86,9 @@ DSL_RIGHT_BRACE_DOT=")."
 DSL_NEW="\n"
 DSL_EMPTY=""
 DSL_LOOP="forEachLine"
-
-## START
-[ -z "$INPUT_FILE_PATH" ] && echo "INPUT_FILE is empty" && exit
-echo "#!/bin/bash" >$BASH_FILE
-
+#
 # REMOVE COMMENTS
-echo "" >$CACHE_FILE
+echo -n "" > $CACHE_FILE
 while IFS= read -r line; do
   [ -z "$line" ] && continue
   #echo "${line:0:1}"
@@ -117,10 +153,8 @@ for ((i = 0; i < ${length}; i++)); do
   [ "$key" == "split" ] && loop="1"
   #[ "$key" == "filesRecursive" ] && loop="1"
   if [ -z "$loop" ]; then
-    echo -n "cd ${COMMAND_FOLDER}${CMD_FOLDER_NAME} && " >>$BASH_FILE
-    echo -n "./${CMD_FILE_NAME}.sh $value" >>$BASH_FILE
-    echo -n " && cd $CURRENT_FOLDER " >>$BASH_FILE
-
+    echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_FILE
+#    echo -n " && cd $CURRENT_FOLDER " >>$BASH_FILE
     echo -n " | " >>$BASH_FILE
   else
     loop_functions+=("$key")
@@ -132,7 +166,7 @@ done
 ## TODO: more loop options
 ## TODO: many loop in one sentence
 if [ ! -z "$loop" ]; then
-  echo $BASH_LOOP_FILE
+  #echo $BASH_LOOP_FILE
   echo -n "./$BASH_LOOP_FILE " >>$BASH_FILE
 
   echo "#!/bin/bash" >$BASH_LOOP_FILE
@@ -148,10 +182,14 @@ if [ ! -z "$loop" ]; then
     #echo "${loop_functions[$i]}"
     #echo "${loop_values[$i]}"
     key="${loop_functions[$i]}"
+    IFS='.' read -a keys <<< "$key"
     value="${loop_values[$i]}"
+    CMD_FILE_NAME=$key
+    CMD_FOLDER_NAME=
+    [ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
 
     if [ -z "$first" ]; then
-      echo -n "./$COMMAND_FOLDER/$key.sh $value" >>$BASH_LOOP_FILE
+      echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
       echo -n ' | ' >>$BASH_LOOP_FILE
       first_val=
     else

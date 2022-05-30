@@ -2,3 +2,6 @@ https://github.com/apimacro/bash.git apimacro
 https://github.com/grabWHOIS/bash.git grabwhois
 https://github.com/reactphp/dns reactphp
 https://github.com/plainedit/bash plainedit
+https://github.com/letpath/bash letpath
+https://github.com/apidsl/functions f
+https://github.com/letwhois/bash.git letwhois
