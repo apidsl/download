@@ -1,0 +1,10 @@
+../bash/DOCS/MENU.md
+../bash/DOCS/ABOUT.md
+../bash/DOCS/SUPPORTED.md
+../bash/DOCS/APIFOUNDATION.md
+../bash/DOCS/CONTRIBUTION.md
+../bash/DOCS/FLATEDIT.md
+../bash/DOCS/DOCS.md
+../bash/DOCS/EXAMPLES.md
+../bash/DOCS/TODO.md
+../bash/DOCS/FOOT.md
