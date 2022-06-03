@@ -13,7 +13,7 @@
 # ./apidsl.sh 'http("https://www.rezydent.de/").xpath("title")'
 
 ## CONFIG
-INPUT_FILE=$1
+CMD=$1
 
 MODULE="apidsl"
 FILE_EXT=".txt"
@@ -29,7 +29,6 @@ CACHE_FOLDER=".${MODULE}.cache"
 HISTORY_FOLDER=".${MODULE}.history"
 
 # START
-mkdir -p $LOGS
 echo "`date +"%T.%3N"` START" > $LOGS
 mkdir -p "$CACHE_FOLDER"
 #
@@ -63,7 +62,7 @@ PROJECT_LIST=$2
 FTIME="$(date +%s)"
 INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
 INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
-echo "${INPUT_FILE}" > ${INPUT_FILE_PATH}
+echo "${CMD}" > ${INPUT_FILE_PATH}
 
 CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
@@ -71,11 +70,11 @@ BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
 PROJECT_PATH=$(pwd)
 #echo $PROJECT_PATH
-[ -z "$INPUT_FILE_PATH" ] && echo "INPUT_FILE is empty" && exit
+[ -z "$INPUT_FILE_PATH" ] && echo "$INPUT_FILE_PATH is empty" && exit
 echo "#!/bin/bash" >$BASH_FILE
 
 #Create temporary file with new line in place
-#cat $INPUT_FILE | sed -e "s/)/\n/" > $CACHE_FILE
+#cat $CMD | sed -e "s/)/\n/" > $CACHE_FILE
 DSL_HASH="#"
 DSL_SLASHSLASH='//'
 DSL_DOT="."

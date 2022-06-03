@@ -41,7 +41,7 @@ load("domains.txt")
 ### nameservers
 
 ```bash
-./apidsl.sh 'letwhois.ns("softreck.com")'
+./apidsl.sh 'whois.ns("softreck.com")'
 ```
 
 ### loop
