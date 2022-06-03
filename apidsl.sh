@@ -29,6 +29,7 @@ CACHE_FOLDER=".${MODULE}.cache"
 HISTORY_FOLDER=".${MODULE}.history"
 
 # START
+mkdir -p $LOGS
 echo "`date +"%T.%3N"` START" > $LOGS
 mkdir -p "$CACHE_FOLDER"
 #
