@@ -16,9 +16,10 @@
 
 ## CONFIG
 CMD=$1
-[ -z "$CMD" ] && CMD="-h"
-OPTION=
+OPTION=$CMD
 (($# == 2)) && CMD=$2 && OPTION=$1
+[ -z "$CMD" ] && CMD="-h"
+
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
@@ -38,13 +39,18 @@ INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
 CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
 LOGS="${INPUT_FILETIME}.logs${FILE_EXT}"
 CURRENT_FOLDER=$(pwd)
+# PREPARE NUMBER for LOGS
+echo -n "$FTIME" >"$CONFIG_FILE"
 
 # START
 echo "$(date +"%T.%3N") START" >$LOGS
 mkdir -p "$CACHE_FOLDER"
 
+echo "CMD $CMD" >>$LOGS
+echo "OPTION $OPTION" >>$LOGS
+
 # HELP INFO ######################################
-if [ "$CMD" == "-h" ] || [ "$CMD" == "--help" ]; then
+if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
   echo "$MODULE $VER"
   echo "Param or command is needed!"
   echo "# PARAM:"
@@ -66,39 +72,39 @@ fi
 ### HELP INFO ######################################
 
 # CONFIG FILE ######################################
-if [ "$CMD" == "init" ]; then
+if [ "$OPTION" == "init" ]; then
   echo -n "$CONFIG_DEFAULT" >"$CURRENT_FOLDER/$CONFIG_FILE"
   exit
 fi
-if [ "$CMD" == "dev" ]; then
+if [ "$OPTION" == "dev" ]; then
   echo -n "$CONFIG_DEV" >"$CURRENT_FOLDER/$CONFIG_FILE"
   exit
 fi
-if [ "$CMD" == "test" ]; then
+if [ "$OPTION" == "test" ]; then
   echo -n "$CONFIG_TEST" >"$CURRENT_FOLDER/$CONFIG_FILE"
   exit
 fi
 
-if [ "$CMD" == "-d" ] || [ "$CMD" == "--download" ]; then
+if [ "$OPTION" == "-d" ] || [ "$OPTION" == "--download" ]; then
   FILE_TO_INSTALL=$2
   [ -z "$FILE_TO_INSTALL" ] && FILE_TO_INSTALL=apidsl.sh
   curl https://raw.githubusercontent.com/apidsl/download/main/apidsl.sh -o $FILE_TO_INSTALL
   exit
 fi
 
-if [ "$CMD" == "-i" ] || [ "$CMD" == "--init" ]; then
+if [ "$OPTION" == "-i" ] || [ "$OPTION" == "--init" ]; then
   FILE_TO_INSTALL=$2
   [ -z "$FILE_TO_INSTALL" ] && FILE_TO_INSTALL=apidsl.sh
   sudo cp -f $FILE_TO_INSTALL /usr/local/bin/apidsl
   exit
 fi
 
-if [ "$CMD" == "-c" ] || [ "$CMD" == "--clean" ]; then
+if [ "$OPTION" == "-c" ] || [ "$OPTION" == "--clean" ]; then
   rm -rf "${CURRENT_FOLDER}/${CACHE_FOLDER}/"
   exit
 fi
 
-if [ "$CMD" == "-l" ] || [ "$CMD" == "--logs" ]; then
+if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
   # get latest logs ID
   FTIME_LOGS=$(cat "$CONFIG_FILE")
   # Prepare Path based on latest logs ID
@@ -118,20 +124,26 @@ PROJECT_LIST=$2
 [ -z "$PROJECT_LIST" ] && PROJECT_LIST="$CONFIG_DEFAULT"
 [ ! -f "$PROJECT_LIST" ] && echo -n "" >"$CONFIG_DEFAULT" && echo "$LOGS" >>".gitignore"
 ### CONFIG FILE ######################################
-
 INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
-echo "${CMD}" >${INPUT_FILE_PATH}
-
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
 BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
-PROJECT_PATH=$(pwd)
-#echo $PROJECT_PATH
+filename=$CMD
+
+if [ "$OPTION" == "-r" ] || [ "$OPTION" == "--run" ]; then
+  [ ! -f "${filename}" ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >> $LOGS && exit
+  cp $filename ${INPUT_FILE_PATH}
+else
+  echo "${filename}" >${INPUT_FILE_PATH}
+fi
+
 [ -z "$INPUT_FILE_PATH" ] && echo "$INPUT_FILE_PATH is empty" >>$LOGS && exit
 echo "#!/bin/bash" >$BASH_FILE
 
-# PREPARE NUMBER for LOGS
-echo -n "$FTIME" >"$CONFIG_FILE"
+echo "INPUT_FILE_PATH $INPUT_FILE_PATH" >>$LOGS
+cat $INPUT_FILE_PATH >>$LOGS
+
+
 
 # PARSER CONFIG ######################################
 #Create temporary file with new line in place
@@ -151,13 +163,13 @@ DSL_LOOP="forEachLine"
 
 # REMOVE COMMENTS ######################################
 echo -n "" >$CACHE_FILE
-while IFS= read -r line; do
-  [ -z "$line" ] && echo "REMOVED: $line" >>$LOGS && continue
+while LINE=; IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]; do
+  [ -z "$LINE" ] && echo "REMOVED: $LINE" >>$LOGS && continue
   #echo "${line:0:1}"
   # Remove Comments
-  [ "${line:0:1}" == "${DSL_HASH}" ] && continue
-  [ "${line:0:1}" == "${DSL_SLASHSLASH}" ] && continue
-  echo "${line}" >>$CACHE_FILE
+  [ "${LINE:0:1}" == "${DSL_HASH}" ] && continue
+  [ "${LINE:0:1}" == "${DSL_SLASHSLASH}" ] && continue
+  echo "${LINE}" >>$CACHE_FILE
 done <"$INPUT_FILE_PATH"
 
 sed -i "s/${DSL_RIGHT_BRACE_DOT}/${DSL_NEW}/g" $CACHE_FILE
@@ -168,8 +180,8 @@ sed -i "s/${DSL_RIGHT_BRACE}/${DSL_NEW}/g" $CACHE_FILE
 # array to hold all lines read
 functions=()
 values=()
-while IFS= read -r LINE; do
-  #while line=; IFS=$' \t\r\n' read -r line || [[ $line ]]; do
+#while IFS= read -r LINE; do
+while LINE=; IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]; do
   #LINE=($line)
   echo "LINE BEFORE CLEANING: $LINE" >>$LOGS
   [ -z "$LINE" ] && continue
@@ -220,25 +232,38 @@ for ((i = 0; i < ${length}; i++)); do
   key="${functions[$i]}"
   value="${values[$i]}"
 
-  ## IMPORT ##########################
+  # IMPORT COMMAND ##########################
   # install dependencies by apifork
   cd "${CURRENT_FOLDER}"
   if [ "$key" == "import" ]; then
     #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
     IFS=',' read -a repo <<<"$value"
-    git_repo=${repo[0]}
-    git_folder=${repo[1]}
-    #echo "FOLDER: ${git_folder}/  FROM REPO:  (${git_repo})"
-    #[ ! -f ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " && continue
-    [ ! -f ${git_folder} ] && continue
-    #echo "${git_folder}" >>.gitignore
-    git clone ${git_repo} && cd ${git_folder}
+    git_repo=(${repo[0]})
+    git_folder=(${repo[1]})
+    git_folder="${git_folder%\"}"
+    git_folder="${git_folder#\"}"
+    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    git clone $git_repo $git_folder && cd $git_folder
     [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
     continue
   fi
-  ## IMPORT ##########################
+  ### IMPORT COMMAND ##########################
+
+  # RUN COMMAND ##########################
+  if [ "$key" == "run" ]; then
+    filename=(${value})
+    filename="${filename%\"}"
+    filename="${filename#\"}"
+    #echo $filename
+    echo "RUN SELF apidsl --run ${filename} " >>$LOGS
+    apidsl --run ${value}
+    #[ ! -f "${filename}" ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " && continue
+    exit
+  fi
+  ### RUN COMMAND ##########################
 
   #k=$((k+1))
   IFS='.' read -a keys <<<"$key"
@@ -322,8 +347,10 @@ fi
 echo "END: $BASH_FILE" >>$LOGS
 
 if [ "$OPTION" == "-d" ] || [ "$OPTION" == "--debug" ]; then
-  echo -e "\n\nSCRIPTS:"
+  echo -e "\n\nCOMMANDS:"
   cat $CACHE_FILE
-  echo -e "\nLOGS:"
+  echo -e "\n\nSCRIPTS:"
+  cat $BASH_FILE
+  echo -e "\n\nLOGS:"
   cat $LOGS
 fi
