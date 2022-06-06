@@ -50,3 +50,24 @@ load("domains.txt")
 ./apidsl.sh 'f.load("domains.txt").split("/n").f.http().f.xpath("title").f.appendToFile("titles.txt")'
 ```
 
+more examples with scripts
+# test.deploymat.com
+
+```bash
+./apidsl.sh 'import("https://github.com/letpath/bash","path").path.load("apifork.txt")'
+./apidsl.sh 'path.load("apifork.txt")'
+```
+
+## LOGS
+
+print logs for latest run
+```bash
+./apidsl.sh -l
+```
+
+## DEBUG
+
+show infos after run 
+```bash
+./apidsl.sh -d 'import("https://github.com/letpath/bash","path").path.load("apifork.txt")'
+```

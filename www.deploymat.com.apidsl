@@ -1,0 +1,15 @@
+#!/usr/local/bin/
+
+# CONTRIBUTION
+## Author: Tom Sapletta
+## Created Date: 26.05.2022
+
+import("https://github.com/botreck/plesk","plesk")
+.plesk.add_subscription("softreck.dev")
+
+import("https://github.com/let-api/github.com","github")
+.github.add_project("infrat/www")
+
+
+
+import("https://github.com/let-api/github.com").add_project("infrat/www")

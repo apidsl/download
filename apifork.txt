@@ -12,4 +12,4 @@ https://github.com/webpageshot/bash webpageshot
 https://github.com/lettxt/bash txt
 https://github.com/let-api/cloudflare cloudflare
 https://github.com/let-api/wordpress wordpress
-https://github.com/let-api/plesk plesk
+#https://github.com/let-api/plesk plesk

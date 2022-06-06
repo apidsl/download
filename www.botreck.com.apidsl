@@ -1,0 +1,7 @@
+#!/usr/local/bin/apidsl
+
+# CONTRIBUTION
+## Author: Tom Sapletta
+## Created Date: 26.05.2022
+
+import("https://github.com/let-api/github.com").add_project("infrat/www")
