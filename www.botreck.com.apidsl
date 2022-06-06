@@ -3,4 +3,4 @@
 # CONTRIBUTION
 ## Author: Tom Sapletta
 ## Created Date: 26.05.2022
-import("https://github.com/letpath/bash","path").path.load("apifork.txt")
+get("https://github.com/letpath/bash","path").path.load("apifork.txt")

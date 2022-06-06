@@ -4,12 +4,12 @@
 ## Author: Tom Sapletta
 ## Created Date: 26.05.2022
 
-import("https://github.com/botreck/plesk","plesk")
+get("https://github.com/botreck/plesk","plesk")
 .plesk.add_subscription("softreck.dev")
 
-import("https://github.com/let-api/github.com","github")
+get("https://github.com/let-api/github.com","github")
 .github.add_project("infrat/www")
 
 
 
-import("https://github.com/let-api/github.com").add_project("infrat/www")
+get("https://github.com/let-api/github.com").add_project("infrat/www")

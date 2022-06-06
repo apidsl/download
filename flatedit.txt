@@ -6,5 +6,5 @@
 ../docs/DOCS/CONTRIBUTION.md
 ../docs/DOCS/FLATEDIT.md
 ../docs/DOCS/DOCS.md
-../docs/DOCS/TODO.md
+#../docs/DOCS/TODO.md
 ../docs/DOCS/FOOT.md

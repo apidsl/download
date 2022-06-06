@@ -1,0 +1,15 @@
+https://github.com/apimacro/bash apimacro
+https://github.com/grabWHOIS/bash grabwhois
+https://github.com/reactphp/dns reactphp
+https://github.com/plainedit/bash plainedit
+https://github.com/letpath/bash path
+https://github.com/letwhois/bash whois
+https://github.com/letfunc/bash func
+https://github.com/letbash/bash bash
+https://github.com/leturi/bash uri
+https://github.com/letclient/browser browser
+https://github.com/webpageshot/bash webpageshot
+https://github.com/lettxt/bash txt
+https://github.com/let-api/cloudflare cloudflare
+https://github.com/let-api/wordpress wordpress
+#https://github.com/let-api/plesk plesk

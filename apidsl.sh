@@ -13,7 +13,6 @@
 # apidsl example/example3.txt
 # apidsl "http("https://www.rezydent.de/").xpath("title")"
 
-
 ## CONFIG
 CMD=$1
 OPTION=$CMD
@@ -39,6 +38,24 @@ INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
 CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
 LOGS="${INPUT_FILETIME}.logs${FILE_EXT}"
 CURRENT_FOLDER=$(pwd)
+
+
+# PARSER CONFIG ######################################
+#Create temporary file with new line in place
+#cat $CMD | sed -e "s/)/\n/" > $CACHE_FILE
+DSL_HASH="#"
+DSL_SLASHSLASH='//'
+DSL_DOT="."
+DSL_SEMICOLON=";"
+DSL_LEFT_BRACE="("
+DSL_RIGHT_BRACE=")"
+DSL_RIGHT_BRACE_SEMICOLON=");"
+DSL_RIGHT_BRACE_DOT=")."
+DSL_NEW="\n"
+DSL_EMPTY=""
+DSL_LOOP="forEachLine"
+### PARSER CONFIG ######################################
+
 # PREPARE NUMBER for LOGS
 echo -n "$FTIME" >"$CONFIG_FILE"
 
@@ -52,20 +69,21 @@ echo "OPTION $OPTION" >>$LOGS
 # HELP INFO ######################################
 if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
   echo "$MODULE $VER"
-  echo "Param or command is needed!"
-  echo "# PARAM:"
+  echo "OPERATOR or COMMAND is needed!"
+  echo "# OPERATORS:"
   echo "$MODULE dev - development packages, for contributors and developers"
   echo "$MODULE test - for testing the project"
-  echo "$MODULE --file - run apidsl script from file"
+  echo "$MODULE --get - get require dependency files apidsl script from file"
+  echo "$MODULE --run - run apidsl script from file"
   echo "$MODULE --clean - clean cache data"
   echo "$MODULE --help - how to use apidsl"
   echo "$MODULE --debug - show logs during runnig"
-  echo "$MODULE --logs - show logs after run"
+  #echo "$MODULE --logs - show logs after run"
   echo "$MODULE --init - copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
   echo "  $MODULE --init apidsl - with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
   echo "$MODULE --download - download from repository and save as apidsl file"
-  echo "# USAGE:"
-  echo "$MODULE 'import(\"https://github.com/letpath/bash\",\"path\")' - import project from git"
+  echo "# USAGE COMMAND:"
+  echo "$MODULE 'get(\"https://github.com/letpath/bash\",\"path\")' - import project from git"
   echo "$MODULE 'path.load(\"flatedit.txt\")' - use imported command, such load file "
   exit
 fi
@@ -104,6 +122,36 @@ if [ "$OPTION" == "-c" ] || [ "$OPTION" == "--clean" ]; then
   exit
 fi
 
+if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
+  filename=(${CMD})
+  filename="${filename%\"}"
+  filename="${filename#\"}"
+  [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
+  while
+    LINE=
+    IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
+  do
+    [ -z "$LINE" ] && echo "REMOVED: $LINE" >>$LOGS && continue
+    #echo "${line:0:1}"
+    # Remove Comments
+    [ "${LINE:0:1}" == "${DSL_HASH}" ] && continue
+    [ "${LINE:0:1}" == "${DSL_SLASHSLASH}" ] && continue
+    IFS=' ' read -a repo <<<"$LINE"
+    git_repo=(${repo[0]})
+    git_folder=(${repo[1]})
+    git_folder="${git_folder%\"}"
+    git_folder="${git_folder#\"}"
+    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    git clone $git_repo $git_folder && cd $git_folder
+    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
+    [ -f "composer.json" ] && ${BUILD_PHP}
+    [ -f "package.json" ] && ${BUILD_NODEJS}
+  done <"$filename"
+
+  exit
+fi
+
 if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
   # get latest logs ID
   FTIME_LOGS=$(cat "$CONFIG_FILE")
@@ -128,42 +176,31 @@ INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
 BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
-filename=$CMD
-
 if [ "$OPTION" == "-r" ] || [ "$OPTION" == "--run" ]; then
-  [ ! -f "${filename}" ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >> $LOGS && exit
+  filename=(${CMD})
+  filename="${filename%\"}"
+  filename="${filename#\"}"
+  #echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER "
+  #exit
+  [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
   cp $filename ${INPUT_FILE_PATH}
 else
-  echo "${filename}" >${INPUT_FILE_PATH}
+  echo "${CMD}" >${INPUT_FILE_PATH}
 fi
 
-[ -z "$INPUT_FILE_PATH" ] && echo "$INPUT_FILE_PATH is empty" >>$LOGS && exit
+[ ! -f "$INPUT_FILE_PATH" ] && echo "$INPUT_FILE_PATH not exist" >>$LOGS && exit
 echo "#!/bin/bash" >$BASH_FILE
 
 echo "INPUT_FILE_PATH $INPUT_FILE_PATH" >>$LOGS
 cat $INPUT_FILE_PATH >>$LOGS
 
 
-
-# PARSER CONFIG ######################################
-#Create temporary file with new line in place
-#cat $CMD | sed -e "s/)/\n/" > $CACHE_FILE
-DSL_HASH="#"
-DSL_SLASHSLASH='//'
-DSL_DOT="."
-DSL_SEMICOLON=";"
-DSL_LEFT_BRACE="("
-DSL_RIGHT_BRACE=")"
-DSL_RIGHT_BRACE_SEMICOLON=");"
-DSL_RIGHT_BRACE_DOT=")."
-DSL_NEW="\n"
-DSL_EMPTY=""
-DSL_LOOP="forEachLine"
-### PARSER CONFIG ######################################
-
 # REMOVE COMMENTS ######################################
 echo -n "" >$CACHE_FILE
-while LINE=; IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]; do
+while
+  LINE=
+  IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
+do
   [ -z "$LINE" ] && echo "REMOVED: $LINE" >>$LOGS && continue
   #echo "${line:0:1}"
   # Remove Comments
@@ -181,7 +218,10 @@ sed -i "s/${DSL_RIGHT_BRACE}/${DSL_NEW}/g" $CACHE_FILE
 functions=()
 values=()
 #while IFS= read -r LINE; do
-while LINE=; IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]; do
+while
+  LINE=
+  IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
+do
   #LINE=($line)
   echo "LINE BEFORE CLEANING: $LINE" >>$LOGS
   [ -z "$LINE" ] && continue
@@ -235,7 +275,7 @@ for ((i = 0; i < ${length}; i++)); do
   # IMPORT COMMAND ##########################
   # install dependencies by apifork
   cd "${CURRENT_FOLDER}"
-  if [ "$key" == "import" ]; then
+  if [ "$key" == "get" ]; then
     #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
     IFS=',' read -a repo <<<"$value"
     git_repo=(${repo[0]})
