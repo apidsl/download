@@ -45,6 +45,7 @@ CURRENT_FOLDER=$(pwd)
 #cat $CMD | sed -e "s/)/\n/" > $CACHE_FILE
 DSL_HASH="#"
 DSL_SLASHSLASH='//'
+DSL_SLASHSLASHSLASH='.///'
 DSL_DOT="."
 DSL_SEMICOLON=";"
 DSL_LEFT_BRACE="("
@@ -55,6 +56,14 @@ DSL_NEW="\n"
 DSL_EMPTY=""
 DSL_LOOP="forEachLine"
 ### PARSER CONFIG ######################################
+#CMD="${CMD%/}"
+#echo $CMD
+#echo ${@%/}
+#echo ${CMD%*${var#*/*/*/}}
+#exit
+#[ "$CMD" == ${DSL_SLASHSLASHSLASH} ] && echo "!!! FILE ${CMD} NOT EXIST "
+#[ "$CMD" == "/" ] && echo "!!! FILE ${CMD} NOT EXIST " >>$LOGS && exit
+#[ "$CMD" == "./" ] && echo "!!! FILE ${CMD} NOT EXIST " >>$LOGS && exit
 
 # PREPARE NUMBER for LOGS
 echo -n "$FTIME" >"$CONFIG_FILE"
@@ -77,7 +86,8 @@ if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
   echo "$MODULE --run - run apidsl script from file"
   echo "$MODULE --clean - clean cache data"
   echo "$MODULE --help - how to use apidsl"
-  echo "$MODULE --debug - show logs during runnig"
+  echo "$MODULE --history - show logs during runnig"
+  echo "$MODULE --logs - show logs during runnig"
   #echo "$MODULE --logs - show logs after run"
   echo "$MODULE --init - copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
   echo "  $MODULE --init apidsl - with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
@@ -152,7 +162,7 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
   exit
 fi
 
-if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
+if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--history" ]; then
   # get latest logs ID
   FTIME_LOGS=$(cat "$CONFIG_FILE")
   # Prepare Path based on latest logs ID
@@ -386,7 +396,7 @@ fi
 ./$BASH_FILE
 echo "END: $BASH_FILE" >>$LOGS
 
-if [ "$OPTION" == "-d" ] || [ "$OPTION" == "--debug" ]; then
+if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
   echo -e "\n\nCOMMANDS:"
   cat $CACHE_FILE
   echo -e "\n\nSCRIPTS:"
