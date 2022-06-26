@@ -1,7 +1,7 @@
 ../docs/DOCS/MENU.md
 ../docs/DOCS/ABOUT.md
 ../docs/DOCS/SUPPORTED.md
-../docs/DOCS/EXAMPLES.md
+../examples/deployment/in.md
 ../docs/DOCS/APIFOUNDATION.md
 ../docs/DOCS/CONTRIBUTION.md
 ../docs/DOCS/FLATEDIT.md

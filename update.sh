@@ -1,5 +1,7 @@
 #!/bin/bash
 set -x
+PATHH=$(pwd)
+git config --global --add safe.directory $PATHH
 rm -rf apifork
 rm -rf flatedit
 #rm -rf apipackage

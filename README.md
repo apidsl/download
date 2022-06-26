@@ -29,22 +29,61 @@ Deklaratywny zapis opisuje działanie połączonych ze sobą bibliotek i api, co
 Ten sam zapis APIDSL pozwala w zależnośći od załadowanych zależnosć uruchomić jak i przetestować infratsrukturę.
 
 
-
 Taki użycie kodu nie ogranicza nas do stosowania jednej technologii czy środowiska,
 a pozwala na łączenie najlepszych rozwiązań z różnych języków, bibliotek, frameworków, projektów opensorce czy API.
 
----
 
 I did last time some wrapper for bash, python, ... with such format: load("domains.txt")
 
 I am using it to build multiplatform scripts, where the same sentence will be executed on PHP, Python, JS, ...
 
+[Programowanie imperatywne oraz deklaratywne | Codenga](https://codenga.pl/artykuly/poradniki/programowanie-imperatywne-oraz-deklaratywne)
+
+> Programowanie imperatywne oraz deklaratywne
+
+https://pl.wikipedia.org/wiki/Imperatyw
+Imperatyw (łac. imperativus – rozkazujący) – nakaz, reguła, zasada, która nie podlega dyskusji i którą można bezpośrednio wywieść z założeń teoretycznych.
+
+Paradygmat imperatywny można opisać tak: “mówimy jak komputer ma wykonać daną rzecz”. Czyli skupiamy się na poszczególnych krokach, które prowadzą do rozwiązania problemu.
+
+Możesz sobie wyobrazić program napisany imperatywnie jako ciąg instrukcji.
+
+
+Paradygmat deklaratywny można opisać tak: “mówimy komputerowi co ma dla nas zrobić”. Ważny jest dla nas wynik jaki uzyskamy - nie wnikamy w jaki sposób komputer ten wynik. osiągnie.
+
+Taki styl programowania pozwala skupić się więc na celu. Na tym, co chcemy osiągnąć. Mniej ważne są tutaj kroki, które do tego celu prowadzą.
 ### The Inspiration was coming from such projects:
 
 + [jQuery, DOM Traversal and Manipulation](https://jquery.com/)
 + [Apache Camel uses a Java Domain Specific Language or DSL for creating Enterprise Integration Patterns or Routes in a variety of domain-specific languages (DSL)](https://camel.apache.org/manual/dsl.html)
 
+# Documenttion
 
+[Documentation as Code » IT spotyka klienta](https://www.michalbartyzel.pl/documentation-as-code/?utm_campaign=coschedule&utm_source=linkedin&utm_medium=Micha%C5%82%20Bartyzel&utm_content=Documentation%20as%20Code%20%C2%BB%20IT%20spotyka%20klienta)
+
+> ### Narzędzia
+>
+> Żałuję, że nie mogę polecić ultraszybkiego edytora SublimeText3, ale czasem jego konfiguracja jest dość zagmatwana.
+>
+> Polecam za to [Visual Studio Code](https://code.visualstudio.com/) jako bardzo dobrą alternatywę wraz z wykazem nastepujących wtyczek do zainstalowania:
+>
+> -   [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one) – wspiera edycję plików `*md`,
+> -   [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) – zapewnia ładny podgląd edytowanych plików,
+> -   [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) – sprawdza poprawność składni Markdown,
+> -   [Spell Right](https://marketplace.visualstudio.com/items?itemName=ban.spellright) – słownik danego języka,
+> -   [Local History](https://marketplace.visualstudio.com/items?itemName=xyz.local-history) – pozwala śledzić lokalną historię zmian w pliku,
+> -   [Git Extension Pack](https://marketplace.visualstudio.com/items?itemName=donjayamanne.git-extension-pack) – zestaw wtyczek wspierających pracę z Gitem.
+>
+> Markdown nie jest jedynym narzędziem. Równie popularny jest [AsciiDoctor](https://marpit.marp.app/). Ma więcej możliwości konfiguracyjnych i pozwala tworzyć bardziej złożone dokumenty. Jeśli opanujesz Markdown, przejście w pewnym momencie na AsciiDoctor będzie dość łatwe.
+>
+> # Diagramy
+>
+> Diagramy również są do ogarnięcia za pomocą tekstu.
+>
+> Jest wiele narzędzi do generowania diagramów z tekstu. Moje typy to:
+>
+> -   [Mermaid](https://mermaid-js.github.io/mermaid/#/) – 90% zastosowań
+> -   [PlantUML](https://plantuml.com/) – do złożonych diagramów, zwłaszcza, gdy chcesz użyć wszystkich niuansów standardu UML 😛
 
 ## Supported technologies  [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/SUPPORTED.md)
 
@@ -68,101 +107,20 @@ I am using it to build multiplatform scripts, where the same sentence will be ex
 + html
 + xml
 
+# letPath
 
-## EXAMPLES [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/EXAMPLES.md)
-
-
-Rozwiązanie #apidsl służy pisaniu komend do wcześniej napisanych skryptów, bibliotek, aplikacji.
-Zamiast ścieżek do plików używamy nazw jako funkcji z parametrem. Korzyść? re-użycie kodu, zamiast refaktoryzacji! APIDSL to jedno z rozwiązań w (pisanej jeszcze) książce #hipermodularyzacja
-
-API + DSL = Application Programming Interface controlled over Domain Specific Language
-#apidsl is available for testing
-#hypermodularity #hyperprogramming #mvp #prototyping #programming #testing
-
-### install
-
-[minsungson/GitHub-cURL: A guide to installing files from GitHub repos in terminal using cURL](https://github.com/minsungson/GitHub-cURL)
-
-```bash
-./apifork install
-```
-
-download and init command apidsl
-```bash
-./apidsl.sh -d
-./apidsl.sh -i
-apidsl -h
-```
-
-
-```js
-load("domains.txt")
-.split("/n")
-.http()
-.xpath("title")
-.appendToFile("titles.txt")
-```
-
-
-### xpath from functions
-
-```bash
-./apidsl.sh 'f.http("https://softreck.com").f.xpath("title")'
-```
-
-
-### tag from letpath
-
-```bash
-./apidsl.sh 'f.http("https://softreck.com").letpath.tag("title")'
-```
-
-
-### nameservers
-
-```bash
-./apidsl.sh 'whois.ns("softreck.com")'
-```
-
-### loop
-
-```bash
-./apidsl.sh 'f.load("domains.txt").split("/n").f.http().f.xpath("title").f.appendToFile("titles.txt")'
-```
-
-more examples with scripts
-# test.deploymat.com
-
-```bash
-./apidsl.sh 'get("https://github.com/letpath/bash","path").path.load("apifork.txt")'
-./apidsl.sh 'path.load("apifork.txt")'
-```
-
-## LOGS
-
-print logs for latest run
-```bash
-./apidsl.sh -l
-```
-
-## DEBUG
-
-show infos after run
-```bash
-./apidsl.sh -d 'get("https://github.com/letpath/bash","path").path.load("apifork.txt")'
-```
 
 
 ## DEPLOYMENT
 
 run file
 ```bash
-./apidsl.sh -d 'run("www.botreck.com.apidsl")'
+apidsl -d 'run("www.botreck.com.apidsl")'
 ```
 run file
 ```bash
-./apidsl.sh --import "https://github.com/letpath/bash" "path"
-./apidsl.sh --run "www.botreck.com.apidsl"
+apidsl --import "https://github.com/letpath/bash" "path"
+apidsl --run "www.botreck.com.apidsl"
 ```
 
 run file with dependency
@@ -171,7 +129,7 @@ apidsl 'get("https://github.com/letclient/ssh","ssh").run("www.botreck.dev.apids
 ```
 with debug
 ```bash
-./apidsl.sh -d 'get("https://github.com/letclient/ssh","clientssh").run("www.botreck.com.apidsl")'
+apidsl -d 'get("https://github.com/letclient/ssh","clientssh").run("www.botreck.com.apidsl")'
 ```
 
 
@@ -189,154 +147,15 @@ import from file: **deployment.get.txt**
 https://github.com/letclient/ssh" "clientssh"
 
 ```bash
-./apidsl.sh --get "deployment.get.txt"
-./apidsl.sh --run "www.botreck.com.apidsl"
-```
-
-### monitoring.sh
-```bash
-./monitoring.sh
-```
-
-import from file: **monitoring.get.txt**
-https://github.com/letclient/ssh-test" "clientssh
-
-```bash
-./apidsl.sh --get "monitoring.get.txt"
-./apidsl.sh --run "www.botreck.com.apidsl"
+apidsl --get "deployment.get.txt"
+apidsl --run "www.botreck.com.apidsl"
 ```
 
 
+## STOP
 
 
 
-get("https://github.com/let-api/github.com").add_project("infrat/www")
-
-## APIfoundation [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/APIFOUNDATION.md)
-
-Here are 3 levels of apifoundation solutions
-+ apifork
-+ apibuild
-+ apidsl
-
-**apifork** to bring dependencies,packagages to the project
-
-**apibuild** - to build it over composer, maven, npm, ...
-
-**apidsl** - to use it over hi level domain language 
-
-
-## Contribution [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/inframonit/bash/edit/main/DOCS/CONTRIBUTION.md)
-
-
-Solutions for development:
-
-Install dependencies after created project
-```bash
-curl https://raw.githubusercontent.com/apifork/bash/main/apifork.sh -o apifork
-echo "https://github.com/flatedit/bash.git flatedit" > "apifork.dev.txt"
-./apifork install apifork.dev.txt
-```
-
-Edit documentation with flatedit
-```bash
-echo '#!/bin/bash' > 'readme'
-echo './flatedit/readme.sh readme.txt' > 'readme'
-echo "./DOCS/MENU.md" >> "readme.txt"
-echo "./DOCS/ABOUT.md" >> "readme.txt"
-echo "./DOCS/FOOT.md" >> "readme.txt"
-```
-
-### Update documentation
-
-```bash
- ./readme
-```
-
-Config project file
-
-The config file: **.apifork** can be another, e.g. **projects.txt**
-
-Just change the first line in  **.apifork** on **projects.txt**
-```bash
-projects.txt
-```
-
-
-### install
-
-[minsungson/GitHub-cURL: A guide to installing files from GitHub repos in terminal using cURL](https://github.com/minsungson/GitHub-cURL)
-
-```bash
-./apifork install
-```
-OR
-
-```bash
-./apifork
-```
-
-### update
-
-```bash
-./apifork update
-```
-
-
-### remove
-
-```bash
-./apifork remove
-```
-
-
-## About flatedit [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/FLATEDIT.md)
-
-
-### Dependencies
-
-projects list [**readme1.txt**](readme1.txt)
-```
-./DOCS/MENU.md
-../bash/DOCS/TODO.md
-./DOCS/FOOT.md
-```
-[**readme.sh**](readme.sh)
-```bash
-./flatedit/readme.md readme1.txt
-```
-
-### Comments
-
-With comments not to load this file
-
-projects list [**readme2.txt**](readme2.txt)
-```
-./DOCS/MENU.md
-../bash/DOCS/TODO.md
-./DOCS/FOOT.md
-```
-[**readme.sh**](readme.sh)
-```bash
-./flatedit/readme.md readme2.txt
-```
-
-
-### Logs
-
-Show not- & working/existing files
-
-
-projects list [**readme3.txt**](readme3.txt)
-```
-./DOCS/MENU.md
-../bash/DOCS/TODO.md
-./DOCS/FOOT.md
-```
-[**readme.sh**](readme.sh)
-```bash
-./flatedit/readme.md readme3.txt
-```
 
 
 ## Docs [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/DOCS.md)
