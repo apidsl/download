@@ -13,16 +13,17 @@
 # apidsl example/example3.txt
 # apidsl "http("https://www.rezydent.de/").xpath("title")"
 
-## CONFIG
+## PARAMS
 CMD=$1
 OPTION=$CMD
 (($# == 2)) && CMD=$2 && OPTION=$1
 [ -z "$CMD" ] && CMD="-h"
 
+
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
-VER="0.2"
+VER="0.3"
 FILE_EXT=".txt"
 CMD_EXT=".sh"
 CONFIG_FILE=".${MODULE}"
@@ -38,6 +39,28 @@ INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
 CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
 LOGS="${INPUT_FILETIME}.logs${FILE_EXT}"
 CURRENT_FOLDER=$(pwd)
+
+# show last logs
+if (($# == 1)); then
+  if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
+    ## -A list all files except . and ..
+    ## -r reverse order while sorting
+    ## -t sort by time, newest first
+    LOGS=$(cd $CACHE_FOLDER && ls -Art | tail -n 1)
+    LOGS="$CACHE_FOLDER/$LOGS"
+    echo -e "\n\nLOGS ($LOGS):"
+    cat $LOGS
+
+    CACHE_FILE=${LOGS/logs/cache/}
+    echo -e "\n\nCOMMANDS ($CACHE_FILE):"
+    cat $CACHE_FILE
+
+    BASH_FILE=${LOGS/logs.txt/sh/}
+    echo -e "\n\nSCRIPTS ($BASH_FILE):"
+    cat $BASH_FILE
+    exit
+  fi
+fi
 
 
 # PARSER CONFIG ######################################
@@ -69,29 +92,38 @@ DSL_LOOP="forEachLine"
 echo -n "$FTIME" >"$CONFIG_FILE"
 
 # START
-echo "$(date +"%T.%3N") START" >$LOGS
 mkdir -p "$CACHE_FOLDER"
+echo "$(date +"%T.%3N") START" >$LOGS
 
 echo "CMD $CMD" >>$LOGS
 echo "OPTION $OPTION" >>$LOGS
 
+# VERSION   ######################################
+if [ "$OPTION" == "-v" ] || [ "$OPTION" == "--version" ]; then
+  echo "$MODULE v $VER"
+  git --version
+  curl --version
+  exit
+fi
 # HELP INFO ######################################
 if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
   echo "$MODULE $VER"
   echo "OPERATOR or COMMAND is needed!"
   echo "# OPERATORS:"
-  echo "$MODULE dev - development packages, for contributors and developers"
-  echo "$MODULE test - for testing the project"
-  echo "$MODULE --get - get require dependency files apidsl script from file"
-  echo "$MODULE --run - run apidsl script from file"
-  echo "$MODULE --clean - clean cache data"
-  echo "$MODULE --help - how to use apidsl"
-  echo "$MODULE --history - show logs during runnig"
-  echo "$MODULE --logs - show logs during runnig"
+  echo " -v, --version        show modulname and version"
+  echo " -g, --get <file>     get required dependency from a file"
+  echo " -r, --run <file>     run apidsl script from a file"
+  echo " -c, --clean          clean cache data"
+  echo " -h, --help           list of commands, examples,"
+  echo " -h, --history        show logs during run"
+  echo " -l, --logs           show logs during or after run"
   #echo "$MODULE --logs - show logs after run"
-  echo "$MODULE --init - copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
-  echo "  $MODULE --init apidsl - with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
-  echo "$MODULE --download - download from repository and save as apidsl file"
+  echo " -i, --init           copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
+  echo " -i, --init <>        with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
+  echo " -d, --download       download from repository and save as apidsl file"
+  echo ""
+  echo " dev - development packages, for contributors and developers"
+  echo " test - for testing the project"
   echo "# USAGE COMMAND:"
   echo "$MODULE 'get(\"https://github.com/letpath/bash\",\"path\")' - import project from git"
   echo "$MODULE 'path.load(\"flatedit.txt\")' - use imported command, such load file "
@@ -132,35 +164,6 @@ if [ "$OPTION" == "-c" ] || [ "$OPTION" == "--clean" ]; then
   exit
 fi
 
-if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
-  filename=(${CMD})
-  filename="${filename%\"}"
-  filename="${filename#\"}"
-  [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
-  while
-    LINE=
-    IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
-  do
-    [ -z "$LINE" ] && echo "REMOVED: $LINE" >>$LOGS && continue
-    #echo "${line:0:1}"
-    # Remove Comments
-    [ "${LINE:0:1}" == "${DSL_HASH}" ] && continue
-    [ "${LINE:0:1}" == "${DSL_SLASHSLASH}" ] && continue
-    IFS=' ' read -a repo <<<"$LINE"
-    git_repo=(${repo[0]})
-    git_folder=(${repo[1]})
-    git_folder="${git_folder%\"}"
-    git_folder="${git_folder#\"}"
-    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
-    git clone $git_repo $git_folder && cd $git_folder
-    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
-    [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
-    [ -f "composer.json" ] && ${BUILD_PHP}
-    [ -f "package.json" ] && ${BUILD_NODEJS}
-  done <"$filename"
-
-  exit
-fi
 
 if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--history" ]; then
   # get latest logs ID
@@ -186,6 +189,61 @@ INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
 BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
+
+# IMPORT COMMAND ##########################
+#cd "${CURRENT_FOLDER}"
+if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
+
+  # FROM COMMMAND
+  if (($# == 3)); then
+    #&& filename=$3 && CMD=$2 && OPTION=$1
+     git_repo=(${repo[0]})
+     git_repo="${git_repo%\"}"
+     git_repo="${git_repo#\"}"
+     git_folder=(${repo[1]})
+     git_folder="${git_folder%\"}"
+     git_folder="${git_folder#\"}"
+    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    #todo: replace git@github.com:
+    echo "1git clone $git_repo $git_folder" >>$LOGS
+    git clone $git_repo $git_folder && cd $git_folder
+    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
+    [ -f "composer.json" ] && ${BUILD_PHP}
+    [ -f "package.json" ] && ${BUILD_NODEJS}
+    exit
+  fi
+  # FROM FILE
+  filename=(${CMD})
+  [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
+  while
+    LINE=
+    IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
+  do
+    [ -z "$LINE" ] && echo "REMOVED: $LINE" >>$LOGS && continue
+    #echo "${line:0:1}"
+    # Remove Comments
+    [ "${LINE:0:1}" == "${DSL_HASH}" ] && continue
+    [ "${LINE:0:1}" == "${DSL_SLASHSLASH}" ] && continue
+    IFS=' ' read -a repo <<<"$LINE"
+    git_repo=(${repo[0]})
+    git_repo="${git_repo%\"}"
+    git_repo="${git_repo#\"}"
+    git_folder=(${repo[1]})
+    git_folder="${git_folder%\"}"
+    git_folder="${git_folder#\"}"
+    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    echo "2git clone ${git_repo} $git_folder" >>$LOGS
+    git clone ${git_repo} $git_folder && cd $git_folder
+    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST IN ${git_folder}, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
+    [ -f "composer.json" ] && ${BUILD_PHP}
+    [ -f "package.json" ] && ${BUILD_NODEJS}
+  done <"$filename"
+  exit
+fi
+
+# RUN COMMAND ##########################
 if [ "$OPTION" == "-r" ] || [ "$OPTION" == "--run" ]; then
   filename=(${CMD})
   filename="${filename%\"}"
@@ -289,12 +347,15 @@ for ((i = 0; i < ${length}; i++)); do
     #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
     IFS=',' read -a repo <<<"$value"
     git_repo=(${repo[0]})
+    git_repo="${git_repo%\"}"
+    git_repo="${git_repo#\"}"
     git_folder=(${repo[1]})
     git_folder="${git_folder%\"}"
     git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    echo "git clone $git_repo $git_folder"  >>$LOGS
     git clone $git_repo $git_folder && cd $git_folder
-    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST IN ${git_folder}, PLEASE INSTALL FIRST " >>$LOGS && continue
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
@@ -352,7 +413,6 @@ if [ ! -z "$loop" ]; then
 
   length=${#loop_functions[@]}
   first=1
-  first_val=1
   for ((i = 0; i < ${length}; i++)); do
 
     #echo "${loop_functions[$i]}"
@@ -367,7 +427,6 @@ if [ ! -z "$loop" ]; then
     if [ -z "$first" ]; then
       echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
       echo -n ' | ' >>$BASH_LOOP_FILE
-      first_val=
     else
       #value='$ITEM'
       echo -n ' ' >>$BASH_LOOP_FILE
