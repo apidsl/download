@@ -42,6 +42,40 @@ CURRENT_FOLDER=$(pwd)
 
 # show last logs
 if (($# == 1)); then
+
+  # VERSION   ######################################
+  if [ "$OPTION" == "-v" ] || [ "$OPTION" == "--version" ]; then
+    echo "$MODULE v $VER"
+    git --version
+    curl --version
+    exit
+  fi
+
+  # HELP INFO ######################################
+  if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
+    echo "$MODULE $VER"
+    echo "OPERATOR or COMMAND is needed!"
+    echo "# OPERATORS:"
+    echo " -v, --version        show modulname and version"
+    echo " -g, --get <file>     get required dependency from a file"
+    echo " -r, --run <file>     run apidsl script from a file"
+    echo " -c, --clean          clean cache data"
+    echo " -h, --help           list of commands, examples,"
+    echo " -h, --history        show logs during run"
+    echo " -l, --logs           show logs during or after run"
+    echo " -i, --init           copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
+    echo " -i, --init <>        with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
+    echo " -d, --download       download from repository and save as apidsl file"
+    echo ""
+    echo " dev - development packages, for contributors and developers"
+    echo " test - for testing the project"
+    echo "# USAGE COMMAND:"
+    echo "$MODULE 'get(\"https://github.com/letpath/bash\",\"path\")' - import project from git"
+    echo "$MODULE 'path.load(\"flatedit.txt\")' - use imported command, such load file "
+    exit
+  fi
+
+  ### HELP INFO ######################################
   if [ "$OPTION" == "-l" ] || [ "$OPTION" == "--logs" ]; then
     ## -A list all files except . and ..
     ## -r reverse order while sorting
@@ -98,38 +132,6 @@ echo "$(date +"%T.%3N") START" >$LOGS
 echo "CMD $CMD" >>$LOGS
 echo "OPTION $OPTION" >>$LOGS
 
-# VERSION   ######################################
-if [ "$OPTION" == "-v" ] || [ "$OPTION" == "--version" ]; then
-  echo "$MODULE v $VER"
-  git --version
-  curl --version
-  exit
-fi
-# HELP INFO ######################################
-if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
-  echo "$MODULE $VER"
-  echo "OPERATOR or COMMAND is needed!"
-  echo "# OPERATORS:"
-  echo " -v, --version        show modulname and version"
-  echo " -g, --get <file>     get required dependency from a file"
-  echo " -r, --run <file>     run apidsl script from a file"
-  echo " -c, --clean          clean cache data"
-  echo " -h, --help           list of commands, examples,"
-  echo " -h, --history        show logs during run"
-  echo " -l, --logs           show logs during or after run"
-  #echo "$MODULE --logs - show logs after run"
-  echo " -i, --init           copy command apidsl.sh to /usrl/local/bin to use apidsl such a system command in shell"
-  echo " -i, --init <>        with 2 params: copy command apidsl to /usrl/local/bin to use apidsl such a system command in shell"
-  echo " -d, --download       download from repository and save as apidsl file"
-  echo ""
-  echo " dev - development packages, for contributors and developers"
-  echo " test - for testing the project"
-  echo "# USAGE COMMAND:"
-  echo "$MODULE 'get(\"https://github.com/letpath/bash\",\"path\")' - import project from git"
-  echo "$MODULE 'path.load(\"flatedit.txt\")' - use imported command, such load file "
-  exit
-fi
-### HELP INFO ######################################
 
 # CONFIG FILE ######################################
 if [ "$OPTION" == "init" ]; then
