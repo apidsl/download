@@ -23,7 +23,7 @@ OPTION=$CMD
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
-VER="0.3"
+VER="0.4"
 FILE_EXT=".txt"
 CMD_EXT=".sh"
 CONFIG_FILE=".${MODULE}"
@@ -55,10 +55,17 @@ if (($# == 1)); then
   if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--help" ]; then
     echo "$MODULE $VER"
     echo "OPERATOR or COMMAND is needed!"
-    echo "# OPERATORS:"
+    echo ""
+    echo "# INTERNAL COMMANDS:"
     echo " -v, --version        show modulname and version"
     echo " -g, --get <file>     get required dependency from a file"
     echo " -r, --run <file>     run apidsl script from a file"
+    echo " --let <name> <value> let define the variables"
+    echo " --put <one> <two> .. Put on the End Selected Values to lines"
+    echo " --split <separator> .Put on the End Selected Values to lines"
+    echo " --end                do summary on the end of script"
+    echo ""
+    echo "# OPERATORS:"
     echo " -c, --clean          clean cache data"
     echo " -h, --help           list of commands, examples,"
     echo " -h, --history        show logs during run"
