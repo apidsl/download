@@ -192,7 +192,7 @@ if [ "$OPTION" == "-i" ] || [ "$OPTION" == "--init" ]; then
 fi
 
 if [ "$OPTION" == "-c" ] || [ "$OPTION" == "--clean" ]; then
-  rm -rf "${CURRENT_FOLDER}/${CACHE_FOLDER}/*"
+  rm -rf "${CURRENT_FOLDER}/${CACHE_FOLDER}/"
   exit
 fi
 
@@ -444,11 +444,12 @@ for ((i = 0; i < ${length}; i++)); do
  if [ "$key" == "put" ]; then
     #echo $value
     COMMAND_VALUE=""
+    COMMAND_CURRENT=$key
     [ -z "$COMMAND_BEFORE" ] && COMMAND_BEFORE=$key
 
     ##SECOND=""
     #FIRSTY='echo "$(</dev/stdin)'
-    echo -n "${COMMAND_BEFORE}=" >>$BASH_FILE
+    echo -n "${COMMAND_CURRENT}=" >>$BASH_FILE
     echo -n '"' >>$BASH_FILE
     prefix=
     while IFS=, read -ra items; do
@@ -474,7 +475,7 @@ for ((i = 0; i < ${length}; i++)); do
   ### PUT COMMAND ##########################
 
 
- ### PUT COMMAND ##########################
+ ### PRINT COMMAND ##########################
  if [ "$key" == "print" ]; then
     #echo $value
     COMMAND_VALUE=""
@@ -484,7 +485,7 @@ for ((i = 0; i < ${length}; i++)); do
     echo "ADD VARIABLE $i: $COMMAND_VALUE TO FILE: $BASH_FILE" >>$LOGS
     continue
   fi
-  ### PUT COMMAND ##########################
+  ### PRINT COMMAND ##########################
 
   #k=$((k+1))
   IFS='.' read -a keys <<<"$key"
@@ -509,7 +510,6 @@ for ((i = 0; i < ${length}; i++)); do
     [ ! -z "$COMMAND_BEFORE" ] && echo -n " echo \$${COMMAND_BEFORE} | " >>$BASH_FILE
     echo " .${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh ${value})" >>$BASH_FILE
     COMMAND_BEFORE=${COMMAND_CURRENT}
-
     #echo -n " | " >>$BASH_FILE
     #    echo -n " && cd $CURRENT_FOLDER " >>$BASH_FILE
     echo "ADD COMMAND $i: $COMMAND_CURRENT TO FILE: $BASH_FILE" >>$LOGS
@@ -526,17 +526,17 @@ done
 ## TODO: many loop in one sentence
 if [ ! -z "$loop" ]; then
   #echo $BASH_LOOP_FILE
-  echo -n "./$BASH_LOOP_FILE " >>$BASH_FILE
+  #echo -n "./$BASH_LOOP_FILE " >>$BASH_FILE
 
-  echo "#!/bin/bash" >$BASH_LOOP_FILE
-  echo "IFS='' read -d '' -r list" >>$BASH_LOOP_FILE
-  echo 'while IFS= read -r ITEM; do' >>$BASH_LOOP_FILE
+  #echo "#!/bin/bash" >$BASH_LOOP_FILE
+  #echo "IFS='' read -d '' -r list" >>$BASH_LOOP_FILE
+  #echo 'while IFS= read -r ITEM; do' >>$BASH_LOOP_FILE
   #echo ' echo "$ITEM"' >>$BASH_LOOP_FILE
 
   length=${#loop_functions[@]}
   first=1
+  show_echo=
   for ((i = 0; i < ${length}; i++)); do
-
     #echo "${loop_functions[$i]}"
     #echo "${loop_values[$i]}"
     key="${loop_functions[$i]}"
@@ -546,28 +546,54 @@ if [ ! -z "$loop" ]; then
     CMD_FOLDER_NAME=
     [ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
 
-    if [ -z "$first" ]; then
-      echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
-      echo -n ' | ' >>$BASH_LOOP_FILE
+
+    if [ ! -z "$first" ]; then
+      echo "for ITEM in \$${COMMAND_CURRENT}; do" >$BASH_LOOP_FILE
+      #echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
+      #echo -n ' | ' >>$BASH_LOOP_FILE
     else
       #value='$ITEM'
-      echo ' ' >>$BASH_LOOP_FILE
-      echo 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
+      #echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
+
+        ## REPLACE dot to underscore
+        value=${value/$SEARCH/$REPLACE}
+        ## FIND VARIABLE, if is equal to before, replace as ITEM
+        findd="\$$COMMAND_BEFORE"
+        replacee="\$ITEM"
+        value=${value/$findd/$replacee}
+
+        #[[ $value != *"$replacee"* ]] && [ -z "$first" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
+        [[ $value != *"$replacee"* ]] && [ -z "$show_echo" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
+
+
+
+      #if [ -z "$show_echo" ]; then
+        #echo -n "echo " >>$BASH_LOOP_FILE
+      #fi
+
+      # IF value is empty then not add an echo
+      if [ ! -z "$value" ]; then
+        show_echo=1
+      fi
+
+      echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
+      echo -n ' | ' >>$BASH_LOOP_FILE
       #echo -n "./$COMMAND_FOLDER/$key.sh $value" >>$BASH_LOOP_FILE
       #echo -n " | " >>$BASH_LOOP_FILE
     fi
+    #echo ' ' >>$BASH_LOOP_FILE
     first=
-
   done
-  #truncate -s -3 $BASH_LOOP_FILE
+  truncate -s -3 $BASH_LOOP_FILE
 
   echo "" >>$BASH_LOOP_FILE
-  #echo "done" >>$BASH_LOOP_FILE
-  echo 'done <<< "$list"' >>$BASH_LOOP_FILE
+  echo "done" >>$BASH_LOOP_FILE
+  #echo 'done <<< "$list"' >>$BASH_LOOP_FILE
 #else
   ##echo $key
   #[ "$key" != "put" ] &&
   #truncate -s -3 $BASH_FILE
+  cat $BASH_LOOP_FILE >>$BASH_FILE
 fi
 ## LOOP ##########################
 
