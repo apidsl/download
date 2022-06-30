@@ -19,14 +19,14 @@ OPTION=$CMD
 (($# == 2)) && CMD=$2 && OPTION=$1
 [ -z "$CMD" ] && CMD="-h"
 
-
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
-VER="0.4"
+VER="0.5"
 FILE_EXT=".txt"
 CMD_EXT=".sh"
 CONFIG_FILE=".${MODULE}"
+ENV_FILE=".${MODULE}.env"
 CONFIG_DEFAULT="${MODULE}${FILE_EXT}"
 CONFIG_DEV="${MODULE}.dev${FILE_EXT}"
 CONFIG_TEST="${MODULE}.test${FILE_EXT}"
@@ -123,7 +123,6 @@ if (($# == 1)); then
   fi
 fi
 
-
 # PARSER CONFIG ######################################
 #Create temporary file with new line in place
 #cat $CMD | sed -e "s/)/\n/" > $CACHE_FILE
@@ -162,7 +161,6 @@ echo "$(date +"%T.%3N") START" >$LOGS
 echo "CMD $CMD" >>$LOGS
 echo "OPTION $OPTION" >>$LOGS
 
-
 # CONFIG FILE ######################################
 if [ "$OPTION" == "init" ]; then
   echo -n "$CONFIG_DEFAULT" >"$CURRENT_FOLDER/$CONFIG_FILE"
@@ -196,7 +194,6 @@ if [ "$OPTION" == "-c" ] || [ "$OPTION" == "--clean" ]; then
   exit
 fi
 
-
 if [ "$OPTION" == "-h" ] || [ "$OPTION" == "--history" ]; then
   # get latest logs ID
   FTIME_LOGS=$(cat "$CONFIG_FILE")
@@ -221,7 +218,6 @@ INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
 BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
-
 # IMPORT COMMAND ##########################
 #cd "${CURRENT_FOLDER}"
 if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
@@ -229,12 +225,12 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
   # FROM COMMMAND
   if (($# == 3)); then
     #&& filename=$3 && CMD=$2 && OPTION=$1
-     git_repo=(${repo[0]})
-     git_repo="${git_repo%\"}"
-     git_repo="${git_repo#\"}"
-     git_folder=(${repo[1]})
-     git_folder="${git_folder%\"}"
-     git_folder="${git_folder#\"}"
+    git_repo=(${repo[0]})
+    git_repo="${git_repo%\"}"
+    git_repo="${git_repo#\"}"
+    git_folder=(${repo[1]})
+    git_folder="${git_folder%\"}"
+    git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
     #todo: replace git@github.com:
     echo "1git clone $git_repo $git_folder" >>$LOGS
@@ -292,9 +288,9 @@ fi
 [ ! -f "$INPUT_FILE_PATH" ] && echo "$INPUT_FILE_PATH not exist" >>$LOGS && exit
 echo "#!/bin/bash" >$BASH_FILE
 
+
 echo "INPUT_FILE_PATH $INPUT_FILE_PATH" >>$LOGS
 cat $INPUT_FILE_PATH >>$LOGS
-
 
 # REMOVE COMMENTS ######################################
 echo -n "" >$CACHE_FILE
@@ -313,8 +309,6 @@ done <"$INPUT_FILE_PATH"
 sed -i "s/${DSL_RIGHT_BRACE_DOT}/${DSL_NEW}/g" $CACHE_FILE
 sed -i "s/${DSL_RIGHT_BRACE}/${DSL_NEW}/g" $CACHE_FILE
 ### REMOVE COMMENTS ######################################
-
-
 
 # PREPARE functions ######################################
 # array to hold all lines read
@@ -357,6 +351,10 @@ do
 done <"$CACHE_FILE"
 ### PREPARE functions ######################################
 
+
+#ENV
+cat "$ENV_FILE" >>$BASH_FILE
+
 BUILD_PHP="composer update"
 BUILD_NODEJS="npm update"
 BUILD_PYTHON="python"
@@ -365,10 +363,10 @@ loop=
 loop_functions=()
 loop_values=()
 k=0
-key=""
-value=""
+key=
+value=
 FIRST_SEPARATOR=
-COMMAND_BEFORE=""
+COMMAND_BEFORE=
 for ((i = 0; i < ${length}; i++)); do
   echo " F$i: ${functions[$i]}" >>$LOGS
   echo " V$i: ${values[$i]}" >>$LOGS
@@ -390,7 +388,7 @@ for ((i = 0; i < ${length}; i++)); do
     git_folder="${git_folder%\"}"
     git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
-    echo "git clone $git_repo $git_folder"  >>$LOGS
+    echo "git clone $git_repo $git_folder" >>$LOGS
     git clone $git_repo $git_folder && cd $git_folder
     [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST IN ${git_folder}, PLEASE INSTALL FIRST " >>$LOGS && continue
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
@@ -408,7 +406,7 @@ for ((i = 0; i < ${length}; i++)); do
     #echo $filename
     echo "RUN SELF apidsl --run ${filename} " >>$LOGS
     ## IN DEBUG MODE
-    if [ -f "apidsl.sh" ];then
+    if [ -f "apidsl.sh" ]; then
       ./apidsl.sh --run ${value}
     else
       apidsl --run ${value}
@@ -418,14 +416,36 @@ for ((i = 0; i < ${length}; i++)); do
   fi
   ### RUN COMMAND ##########################
 
-  # LET COMMAND ##########################
+  # ARG COMMAND ##########################
   # install dependencies by apifork
   cd "${CURRENT_FOLDER}"
-  if [ "$key" == "let" ]; then
+  if [ "$key" == "arg" ] || [ "$key" == "ARG" ]; then
     #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
     IFS=',' read -a repo <<<"$value"
     let_name=(${repo[0]})
-    let_name="${let_name/$}"
+    let_name="${let_name/$/}"
+    let_name="${let_name%\"}"
+    let_name="${let_name#\"}"
+    let_value=(${repo[1]})
+    #echo $key
+    #echo $let_value
+    COMMAND_VALUE="read -p ${let_value} ${let_name}"
+    #COMMAND_VALUE=${let_name}=${let_value}
+    echo "$COMMAND_VALUE" >>$BASH_FILE
+    #echo -n " | " >>$BASH_FILE
+    echo "ADD CONSTANT $i: $COMMAND_VALUE TO FILE: $BASH_FILE" >>$LOGS
+    continue
+  fi
+  ### arg COMMAND ##########################
+
+  # LET COMMAND ##########################
+  # install dependencies by apifork
+  cd "${CURRENT_FOLDER}"
+  if [ "$key" == "let" ] || [ "$key" == "LET" ]; then
+    #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
+    IFS=',' read -a repo <<<"$value"
+    let_name=(${repo[0]})
+    let_name="${let_name/$/}"
     let_name="${let_name%\"}"
     let_name="${let_name#\"}"
     let_value=${repo[1]}
@@ -440,8 +460,35 @@ for ((i = 0; i < ${length}; i++)); do
   ### LET COMMAND ##########################
 
 
- ### PUT COMMAND ##########################
- if [ "$key" == "put" ]; then
+  # ENV COMMAND ##########################
+  if [ "$key" == "env" ] || [ "$key" == "ENV" ]; then
+    #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
+    IFS=',' read -a repo <<<"$value"
+    let_name=(${repo[0]})
+    let_name="${let_name/$/}"
+    let_name="${let_name%\"}"
+    let_name="${let_name#\"}"
+    let_value=${repo[1]}
+    let_value="${let_value%\"}"
+    let_value="${let_value#\"}"
+    #[[ "${let_value}" == "\$*" ]] &&
+    #let_value=$(${let_value})
+    #echo $key
+    #echo $let_value
+    COMMAND_VALUE="${let_name}=${let_value}"
+    echo "$COMMAND_VALUE" >>$ENV_FILE
+    #echo -n " | " >>$BASH_FILE
+    echo "ADD CONSTANT $i: $COMMAND_VALUE TO FILE: $BASH_FILE" >>$LOGS
+
+    #ENV
+    cat "$ENV_FILE" >>$BASH_FILE
+
+    continue
+  fi
+  ### ENV COMMAND ##########################
+
+  ### PUT COMMAND ##########################
+  if [ "$key" == "put" ]; then
     #echo $value
     COMMAND_VALUE=""
     COMMAND_CURRENT=$key
@@ -453,17 +500,17 @@ for ((i = 0; i < ${length}; i++)); do
     echo -n '"' >>$BASH_FILE
     prefix=
     while IFS=, read -ra items; do
-        for item in "${items[@]}"; do
-          #echo $item
-          #COMMAND_VALUE+="$FIRSTY ${item}"
-          #echo -n ${item} >>$BASH_FILE
-          item="${item%\"}"
-          item="${item#\"}"
-          item=${item/$SEARCH/$REPLACE}
-          echo -n ${prefix}${item} >>$BASH_FILE
-          prefix=${separator}
-        done
-    done <<< "$value"
+      for item in "${items[@]}"; do
+        #echo $item
+        #COMMAND_VALUE+="$FIRSTY ${item}"
+        #echo -n ${item} >>$BASH_FILE
+        item="${item%\"}"
+        item="${item#\"}"
+        item=${item/$SEARCH/$REPLACE}
+        echo -n ${prefix}${item} >>$BASH_FILE
+        prefix=${separator}
+      done
+    done <<<"$value"
     echo '"' >>$BASH_FILE
     #echo -n ${COMMAND_VALUE} >>$BASH_FILE
 
@@ -475,8 +522,8 @@ for ((i = 0; i < ${length}; i++)); do
   ### PUT COMMAND ##########################
 
 
- ### PRINT COMMAND ##########################
- if [ "$key" == "print" ]; then
+  ### PRINT COMMAND ##########################
+  if [ "$key" == "print" ]; then
     #echo $value
     COMMAND_VALUE=""
     COMMAND_CURRENT="echo \$${COMMAND_BEFORE}"
@@ -496,6 +543,7 @@ for ((i = 0; i < ${length}; i++)); do
 
   [ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
   [ "$key" == "split" ] && loop="1"
+
 
   #[ "$key" == "filesRecursive" ] && loop="1"
   if [ -z "$loop" ]; then
@@ -519,6 +567,7 @@ for ((i = 0; i < ${length}; i++)); do
     echo "ADD KEY: $key TO ARRAY LOOP" >>$LOGS
   fi
 done
+
 
 ## LOOP ##########################
 ## LOOP with split function
@@ -546,7 +595,6 @@ if [ ! -z "$loop" ]; then
     CMD_FOLDER_NAME=
     [ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
 
-
     if [ ! -z "$first" ]; then
       echo "for ITEM in \$${COMMAND_CURRENT}; do" >$BASH_LOOP_FILE
       #echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
@@ -555,20 +603,18 @@ if [ ! -z "$loop" ]; then
       #value='$ITEM'
       #echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
 
-        ## REPLACE dot to underscore
-        value=${value/$SEARCH/$REPLACE}
-        ## FIND VARIABLE, if is equal to before, replace as ITEM
-        findd="\$$COMMAND_BEFORE"
-        replacee="\$ITEM"
-        value=${value/$findd/$replacee}
+      ## REPLACE dot to underscore
+      value=${value/$SEARCH/$REPLACE}
+      ## FIND VARIABLE, if is equal to before, replace as ITEM
+      findd="\$$COMMAND_BEFORE"
+      replacee="\$ITEM"
+      value=${value/$findd/$replacee}
 
-        #[[ $value != *"$replacee"* ]] && [ -z "$first" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
-        [[ $value != *"$replacee"* ]] && [ -z "$show_echo" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
-
-
+      #[[ $value != *"$replacee"* ]] && [ -z "$first" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
+      [[ $value != *"$replacee"* ]] && [ -z "$show_echo" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
 
       #if [ -z "$show_echo" ]; then
-        #echo -n "echo " >>$BASH_LOOP_FILE
+      #echo -n "echo " >>$BASH_LOOP_FILE
       #fi
 
       # IF value is empty then not add an echo
@@ -589,7 +635,7 @@ if [ ! -z "$loop" ]; then
   echo "" >>$BASH_LOOP_FILE
   echo "done" >>$BASH_LOOP_FILE
   #echo 'done <<< "$list"' >>$BASH_LOOP_FILE
-#else
+  #else
   ##echo $key
   #[ "$key" != "put" ] &&
   #truncate -s -3 $BASH_FILE
