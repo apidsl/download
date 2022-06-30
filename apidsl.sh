@@ -216,6 +216,7 @@ PROJECT_LIST=$2
 ### CONFIG FILE ######################################
 INPUT_FILE_PATH="${INPUT_FILETIME}${FILE_EXT}"
 BASH_FILE="${INPUT_FILETIME}${CMD_EXT}"
+END_FILE="${INPUT_FILETIME}.end${CMD_EXT}"
 BASH_LOOP_FILE="${INPUT_FILETIME}.loop${CMD_EXT}"
 
 # IMPORT COMMAND ##########################
@@ -348,12 +349,14 @@ do
   ## depends param function exist or not
   [ "$key" = "$i" ] && functions+=("$key") && values+=("")
   [ "$key" != "$i" ] && functions+=("$key") && values+=("$i")
+
 done <"$CACHE_FILE"
 ### PREPARE functions ######################################
 
 
 #ENV
-cat "$ENV_FILE" >>$BASH_FILE
+[ ! -f "$ENV_FILE" ] && echo -n "" >>$ENV_FILE
+[ -f "$ENV_FILE" ] && cat "$ENV_FILE" >>$BASH_FILE
 
 BUILD_PHP="composer update"
 BUILD_NODEJS="npm update"
@@ -459,7 +462,6 @@ for ((i = 0; i < ${length}; i++)); do
   fi
   ### LET COMMAND ##########################
 
-
   # ENV COMMAND ##########################
   if [ "$key" == "env" ] || [ "$key" == "ENV" ]; then
     #[ ! -z "${keys[1]}" ] && CMD_FILE_NAME=${keys[1]} && CMD_FOLDER_NAME=/${keys[0]}
@@ -471,18 +473,14 @@ for ((i = 0; i < ${length}; i++)); do
     let_value=${repo[1]}
     let_value="${let_value%\"}"
     let_value="${let_value#\"}"
-    #[[ "${let_value}" == "\$*" ]] &&
-    #let_value=$(${let_value})
     #echo $key
     #echo $let_value
     COMMAND_VALUE="${let_name}=${let_value}"
-    echo "$COMMAND_VALUE" >>$ENV_FILE
-    #echo -n " | " >>$BASH_FILE
+    [ -f "$ENV_FILE" ] && echo "$COMMAND_VALUE" >>$ENV_FILE
+    [ -f "$ENV_FILE" ] && echo "!!! ENV_FILE ($ENV_FILE) not exist" >>$LOGS && exit
     echo "ADD CONSTANT $i: $COMMAND_VALUE TO FILE: $BASH_FILE" >>$LOGS
-
     #ENV
     cat "$ENV_FILE" >>$BASH_FILE
-
     continue
   fi
   ### ENV COMMAND ##########################
@@ -521,7 +519,6 @@ for ((i = 0; i < ${length}; i++)); do
   fi
   ### PUT COMMAND ##########################
 
-
   ### PRINT COMMAND ##########################
   if [ "$key" == "print" ]; then
     #echo $value
@@ -533,6 +530,41 @@ for ((i = 0; i < ${length}; i++)); do
     continue
   fi
   ### PRINT COMMAND ##########################
+
+  #OPEN ON THE END
+
+  ### OPEN FILE COMMAND ##########################
+  if [ "$key" == "open" ]; then
+    COMMANDO="xdg-open ${value}"
+    echo ${COMMANDO} >>$END_FILE
+    echo "ADD VARIABLE $i: $COMMAND_VALUE TO FILE: $END_FILE" >>$LOGS
+    continue
+  fi
+  ### OPEN FILE COMMAND ##########################
+  ### WEBSITE COMMAND ##########################
+  if [ "$key" == "browser" ]; then
+    COMMANDO="x-www-browser ${value}"
+    echo ${COMMANDO} >>$END_FILE
+    echo "ADD VARIABLE $i: $COMMAND_VALUE TO FILE: $END_FILE" >>$LOGS
+    continue
+  fi
+  ### WEBSITE COMMAND ##########################
+  ### WEBSITE COMMAND ##########################
+  if [ "$key" == "firefox" ]; then
+    COMMANDO="firefox ${value}"
+    echo ${COMMANDO} >>$END_FILE
+    echo "ADD VARIABLE $i: $COMMAND_VALUE TO FILE: $END_FILE" >>$LOGS
+    continue
+  fi
+  ### WEBSITE COMMAND ##########################
+  ### WEBSITE COMMAND ##########################
+  if [ "$key" == "chrome" ]; then
+    COMMANDO="sensible-browser ${value}"
+    echo ${COMMANDO} >>$END_FILE
+    echo "ADD VARIABLE $i: $COMMAND_VALUE TO FILE: $END_FILE" >>$LOGS
+    continue
+  fi
+  ### WEBSITE COMMAND ##########################
 
   #k=$((k+1))
   IFS='.' read -a keys <<<"$key"
@@ -577,11 +609,6 @@ if [ ! -z "$loop" ]; then
   #echo $BASH_LOOP_FILE
   #echo -n "./$BASH_LOOP_FILE " >>$BASH_FILE
 
-  #echo "#!/bin/bash" >$BASH_LOOP_FILE
-  #echo "IFS='' read -d '' -r list" >>$BASH_LOOP_FILE
-  #echo 'while IFS= read -r ITEM; do' >>$BASH_LOOP_FILE
-  #echo ' echo "$ITEM"' >>$BASH_LOOP_FILE
-
   length=${#loop_functions[@]}
   first=1
   show_echo=
@@ -600,9 +627,6 @@ if [ ! -z "$loop" ]; then
       #echo -n ".${CMD_FOLDER_NAME}/${CMD_FILE_NAME}.sh $value" >>$BASH_LOOP_FILE
       #echo -n ' | ' >>$BASH_LOOP_FILE
     else
-      #value='$ITEM'
-      #echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
-
       ## REPLACE dot to underscore
       value=${value/$SEARCH/$REPLACE}
       ## FIND VARIABLE, if is equal to before, replace as ITEM
@@ -612,10 +636,6 @@ if [ ! -z "$loop" ]; then
 
       #[[ $value != *"$replacee"* ]] && [ -z "$first" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
       [[ $value != *"$replacee"* ]] && [ -z "$show_echo" ] && echo -n 'echo "$ITEM" | ' >>$BASH_LOOP_FILE
-
-      #if [ -z "$show_echo" ]; then
-      #echo -n "echo " >>$BASH_LOOP_FILE
-      #fi
 
       # IF value is empty then not add an echo
       if [ ! -z "$value" ]; then
@@ -644,6 +664,8 @@ fi
 ## LOOP ##########################
 
 #echo "RUN: $BASH_FILE" >> $LOGS
+cat $END_FILE >> $BASH_FILE
+
 ./$BASH_FILE
 echo "END: $BASH_FILE" >>$LOGS
 
