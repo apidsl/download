@@ -22,10 +22,11 @@ OPTION=$CMD
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
-VER="0.5"
+VER="0.5.1"
 FILE_EXT=".txt"
 CMD_EXT=".sh"
 CONFIG_FILE=".${MODULE}"
+PACKAGE_FILE=".${MODULE}.txt"
 ENV_FILE=".${MODULE}.env"
 CONFIG_DEFAULT="${MODULE}${FILE_EXT}"
 CONFIG_DEV="${MODULE}.dev${FILE_EXT}"
@@ -232,20 +233,26 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
     git_folder=(${repo[1]})
     git_folder="${git_folder%\"}"
     git_folder="${git_folder#\"}"
-    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
+    [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
     #todo: replace git@github.com:
     echo "1git clone $git_repo $git_folder" >>$LOGS
     git clone $git_repo $git_folder && cd $git_folder
-    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
+    [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && exit
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
     exit
   fi
 
-  # FROM FILE
-  filename=(${CMD})
-  [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
+  # FROM custom FILE
+  if (($# == 2)); then
+    PACKAGE_FILE=(${2})
+  fi
+
+  #echo $PACKAGE_FILE
+
+  [ ! -f ${PACKAGE_FILE} ] && echo "!!! FILE ${PACKAGE_FILE} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
+
   while
     LINE=
     IFS=$' \t\r\n' read -r LINE || [[ $LINE ]]
@@ -269,7 +276,7 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
-  done <"$filename"
+  done <"$PACKAGE_FILE"
   exit
 fi
 
