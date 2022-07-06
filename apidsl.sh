@@ -111,13 +111,14 @@ if (($# == 1)); then
       cd "${CURRENT_FOLDER}"
       echo "$git_folder"
       [ ! -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} NOT EXIST" >>$LOGS && continue
-      echo "git pull $git_folder" >>$LOGS
-      cd $git_folder
+      echo "git pull ${git_folder}" >>$LOGS
+      cd ${git_folder}
       git pull
       [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && continue
       [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
       [ -f "composer.json" ] && ${BUILD_PHP}
       [ -f "package.json" ] && ${BUILD_NODEJS}
+      [ -f "requirements.txt" ] && ${BUILD_PYTHON}
     done
 
     exit
@@ -235,12 +236,13 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
     git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
     #todo: replace git@github.com:
-    echo "1git clone $git_repo $git_folder" >>$LOGS
-    git clone $git_repo $git_folder && cd $git_folder
+    echo "1git clone ${git_repo} ${git_folder}" >>$LOGS
+    git clone ${git_repo} ${git_folder} && cd ${git_folder}
     [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST, PLEASE INSTALL FIRST " >>$LOGS && exit
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
+    [ -f "requirements.txt" ] && ${BUILD_PYTHON}
     exit
   fi
 
@@ -271,11 +273,12 @@ if [ "$OPTION" == "-g" ] || [ "$OPTION" == "--get" ]; then
     git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
     echo "2git clone ${git_repo} $git_folder" >>$LOGS
-    git clone ${git_repo} $git_folder && cd $git_folder
+    git clone ${git_repo} ${git_folder} && cd ${git_folder}
     [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST IN ${git_folder}, PLEASE INSTALL FIRST " >>$LOGS && continue
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
+    [ -f "requirements.txt" ] && ${BUILD_PYTHON}
   done <"$PACKAGE_FILE"
   exit
 fi
@@ -367,7 +370,7 @@ done <"$CACHE_FILE"
 
 BUILD_PHP="composer update"
 BUILD_NODEJS="npm update"
-BUILD_PYTHON="python"
+BUILD_PYTHON="python3 -m pip install -r requirements.txt"
 length=${#functions[@]}
 loop=
 loop_functions=()
@@ -398,12 +401,13 @@ for ((i = 0; i < ${length}; i++)); do
     git_folder="${git_folder%\"}"
     git_folder="${git_folder#\"}"
     [ -d ${git_folder} ] && echo "!!! FOLDER ${git_folder} EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && continue
-    echo "git clone $git_repo $git_folder" >>$LOGS
-    git clone $git_repo $git_folder && cd $git_folder
+    echo "git clone ${git_repo} ${git_folder}" >>$LOGS
+    git clone ${git_repo} ${git_folder} && cd ${git_folder}
     [ "$(pwd)" == "$CURRENT_FOLDER" ] && echo "!!! GIT PROJECT ${git_repo} NOT EXIST IN ${git_folder}, PLEASE INSTALL FIRST " >>$LOGS && continue
     [ -f ".gitignore" ] && echo "${git_folder}" >>.gitignore
     [ -f "composer.json" ] && ${BUILD_PHP}
     [ -f "package.json" ] && ${BUILD_NODEJS}
+    [ -f "requirements.txt" ] && ${BUILD_PYTHON}
     continue
   fi
   ### IMPORT COMMAND ##########################
