@@ -40,6 +40,10 @@ INPUT_FILETIME="${CACHE_FOLDER}/${FTIME}"
 CACHE_FILE="${INPUT_FILETIME}.cache${FILE_EXT}"
 LOGS="${INPUT_FILETIME}.logs${FILE_EXT}"
 CURRENT_FOLDER=$(pwd)
+#
+BUILD_PHP="composer update"
+BUILD_NODEJS="npm update"
+BUILD_PYTHON="python3 -m pip install -r requirements.txt"
 
 # show last logs
 if (($# == 1)); then
@@ -368,9 +372,7 @@ done <"$CACHE_FILE"
 [ ! -f "$ENV_FILE" ] && echo -n "" >>$ENV_FILE
 [ -f "$ENV_FILE" ] && cat "$ENV_FILE" >>$BASH_FILE
 
-BUILD_PHP="composer update"
-BUILD_NODEJS="npm update"
-BUILD_PYTHON="python3 -m pip install -r requirements.txt"
+
 length=${#functions[@]}
 loop=
 loop_functions=()
