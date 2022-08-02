@@ -22,7 +22,7 @@ OPTION=$CMD
 #[ $# -ne 1 ] && echo "Exactly 1 param is needed" &&  exit 1
 
 MODULE="apidsl"
-VER="0.5.1"
+VER="0.5.2"
 FILE_EXT=".txt"
 CMD_EXT=".sh"
 CONFIG_FILE=".${MODULE}"
@@ -51,8 +51,18 @@ if (($# == 1)); then
   # VERSION   ######################################
   if [ "$OPTION" == "-v" ] || [ "$OPTION" == "--version" ]; then
     echo "$MODULE v $VER"
+    echo ":OS PACKAGES:"
     git --version
-    curl --version
+    curl --version | awk '{print $1 " v " $2}' | head -n 1
+    echo ":GIT REPOS:"
+    LIST=$(ls -d */)
+    for git_folder in $LIST; do
+      cd "${CURRENT_FOLDER}"
+      echo "git remote -v ${git_folder}" >>$LOGS
+      echo -n "./${git_folder} - "
+      cd ${git_folder}
+      git remote -v | grep fetch
+    done
     exit
   fi
 
@@ -677,7 +687,7 @@ fi
 ## LOOP ##########################
 
 #echo "RUN: $BASH_FILE" >> $LOGS
-cat $END_FILE >> $BASH_FILE
+[ -r $END_FILE ] && cat $END_FILE >> $BASH_FILE
 
 ./$BASH_FILE
 echo "END: $BASH_FILE" >>$LOGS
