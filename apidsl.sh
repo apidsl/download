@@ -73,7 +73,10 @@ if (($# == 1)); then
     echo ""
     echo "# INTERNAL COMMANDS:"
     echo " -v, --version        show modulname and version"
+    echo " -e, --examples       download examples"
+    echo " -g, --get            get without parameter show list of registry"
     echo " -g, --get <file>     get required dependency from a file"
+    echo " -r, --run            run without params show the list of files inside"
     echo " -r, --run <file>     run apidsl script from a file"
     echo " --let <name> <value> let define the variables"
     echo " --put <one> <two> .. Put on the End Selected Values to lines"
@@ -299,6 +302,7 @@ fi
 
 # RUN COMMAND ##########################
 if [ "$OPTION" == "-r" ] || [ "$OPTION" == "--run" ]; then
+  [ -z $filename ] && ls -1 *.apidsl && exit
   filename=(${CMD})
   filename="${filename%\"}"
   filename="${filename#\"}"
