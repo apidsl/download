@@ -201,6 +201,16 @@ if [ "$OPTION" == "-d" ] || [ "$OPTION" == "--download" ]; then
   exit
 fi
 
+if [ "$OPTION" == "-e" ] || [ "$OPTION" == "--examples" ]; then
+  FILE_TO_INSTALL=$2
+  [ -z "$FILE_TO_INSTALL" ] && FILE_TO_INSTALL=apidsl.sh
+  git_folder=examples
+  git clone https://github.com/apidsl/examples $git_folder
+  [ -d ${git_folder} ] && cd ${git_folder} && git pull
+  cp examples/*/*.apidsl ./
+  exit
+fi
+
 if [ "$OPTION" == "-i" ] || [ "$OPTION" == "--init" ]; then
   FILE_TO_INSTALL=$2
   [ -z "$FILE_TO_INSTALL" ] && FILE_TO_INSTALL=apidsl.sh
@@ -302,12 +312,10 @@ fi
 
 # RUN COMMAND ##########################
 if [ "$OPTION" == "-r" ] || [ "$OPTION" == "--run" ]; then
-  [ -z $filename ] && ls -1 *.apidsl && exit
+  [ -z ${2} ] && ls -1 *.apidsl && exit
   filename=(${CMD})
   filename="${filename%\"}"
   filename="${filename#\"}"
-  #echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER "
-  #exit
   [ ! -f ${filename} ] && echo "!!! FILE/FOLDER ${filename} NOT EXIST, PLEASE INSTALL IN ANOTHER FOLDER " >>$LOGS && exit
   cp $filename ${INPUT_FILE_PATH}
 else
