@@ -1,10 +1,11 @@
 
 ![logo.apidsl.com](https://logo.apidsl.com/1/cover.png)
 
-# [Sourcecode - bash.apidsl.com](https://bash.apidsl.com/) [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/MENU.md) 
+# [Documentation - docs.apidsl.com](https://docs.apidsl.com/) [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/MD/MENU.md) 
 
++ [Sourcecode - bash.apidsl.com](http://bash.apidsl.com)
++ [Contribution - contribution.apidsl.com](http://contribution.apidsl.com)
 + [Examples - examples.apidsl.com](http://examples.apidsl.com)
-+ [Documentation - docs.apidsl.com](https://docs.apidsl.com/)
 + [Blog - www.apidsl.com](https://www.apidsl.com/)
 + [Logotyp - logo.apidsl.com](https://logo.apidsl.com/)
 
@@ -12,7 +13,33 @@
 
 
 
-## About [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/ABOUT.md)
+## About [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/MD/ABOUT.md)
+
+One of the benefit of modularization is to have a modular architecture with independent modules from a programming language, so we present here an example langauge the APIDSL, which bring together different languages on shell level
+
+I did last time some wrapper for bash, python, ... with such format: load("domains.txt")
+
+```apidsl
+load("domains.txt")
+.split("/n")
+.http()
+.xpath("title")
+.appendToFile("titles.txt")
+```
+
+I am using it to build multiplatform scripts, where the same sentence will be executed on PHP, Python, JS, ...
+
+### The Inspiration was coming from such projects:
+
+
++ [jQuery, DOM Traversal and Manipulation](https://jquery.com/)
++ [Apache Camel uses a Java Domain Specific Language or DSL for creating Enterprise Integration Patterns or Routes in a variety of domain-specific languages (DSL)](https://camel.apache.org/manual/dsl.html)
+
+## Czym jest APIDSL
+
+
+![apidsllayers](apidsl-layers.png)
+
 
 APIDSL to zwykły skrypt o niezwykłych możliwościach
 + napisany w bash-u
@@ -57,35 +84,10 @@ Taki styl programowania pozwala skupić się więc na celu. Na tym, co chcemy os
 + [jQuery, DOM Traversal and Manipulation](https://jquery.com/)
 + [Apache Camel uses a Java Domain Specific Language or DSL for creating Enterprise Integration Patterns or Routes in a variety of domain-specific languages (DSL)](https://camel.apache.org/manual/dsl.html)
 
-# Documenttion
 
-[Documentation as Code » IT spotyka klienta](https://www.michalbartyzel.pl/documentation-as-code/?utm_campaign=coschedule&utm_source=linkedin&utm_medium=Micha%C5%82%20Bartyzel&utm_content=Documentation%20as%20Code%20%C2%BB%20IT%20spotyka%20klienta)
 
-> ### Narzędzia
->
-> Żałuję, że nie mogę polecić ultraszybkiego edytora SublimeText3, ale czasem jego konfiguracja jest dość zagmatwana.
->
-> Polecam za to [Visual Studio Code](https://code.visualstudio.com/) jako bardzo dobrą alternatywę wraz z wykazem nastepujących wtyczek do zainstalowania:
->
-> -   [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one) – wspiera edycję plików `*md`,
-> -   [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) – zapewnia ładny podgląd edytowanych plików,
-> -   [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) – sprawdza poprawność składni Markdown,
-> -   [Spell Right](https://marketplace.visualstudio.com/items?itemName=ban.spellright) – słownik danego języka,
-> -   [Local History](https://marketplace.visualstudio.com/items?itemName=xyz.local-history) – pozwala śledzić lokalną historię zmian w pliku,
-> -   [Git Extension Pack](https://marketplace.visualstudio.com/items?itemName=donjayamanne.git-extension-pack) – zestaw wtyczek wspierających pracę z Gitem.
->
-> Markdown nie jest jedynym narzędziem. Równie popularny jest [AsciiDoctor](https://marpit.marp.app/). Ma więcej możliwości konfiguracyjnych i pozwala tworzyć bardziej złożone dokumenty. Jeśli opanujesz Markdown, przejście w pewnym momencie na AsciiDoctor będzie dość łatwe.
->
-> # Diagramy
->
-> Diagramy również są do ogarnięcia za pomocą tekstu.
->
-> Jest wiele narzędzi do generowania diagramów z tekstu. Moje typy to:
->
-> -   [Mermaid](https://mermaid-js.github.io/mermaid/#/) – 90% zastosowań
-> -   [PlantUML](https://plantuml.com/) – do złożonych diagramów, zwłaszcza, gdy chcesz użyć wszystkich niuansów standardu UML 😛
 
-## Supported technologies  [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/SUPPORTED.md)
+## Supported technologies  [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/MD/SUPPORTED.md)
 
 
 ### Languages:
@@ -119,7 +121,7 @@ apidsl -d 'run("www.botreck.com.apidsl")'
 ```
 run file
 ```bash
-apidsl --import "https://github.com/letpath/bash" "path"
+apidsl --get "https://github.com/letpath/bash" "path"
 apidsl --run "www.botreck.com.apidsl"
 ```
 
@@ -156,26 +158,6 @@ apidsl --run "www.botreck.com.apidsl"
 
 
 
-
-
-## Docs [<span style='font-size:20px;'>&#x270D;</span>](https://github.com/apidsl/docs/edit/main/DOCS/DOCS.md)
-
-
-
-
-### Zalezności ładowane z github
-
-+ zamiast xpath - ładowanie zalezności przez skrypt github
-+ letPath - przygotować
-  https://github.com/letpath/bash
-
-
-### Another examples
-
-get options
-https://reposhub.com/linux/system-utilities/ko1nksm-getoptions.html
-
-https://github.com/ko1nksm/getoptions
 
 
 

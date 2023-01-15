@@ -175,6 +175,7 @@ echo -n "$FTIME" >"$CONFIG_FILE"
 
 # START
 mkdir -p "$CACHE_FOLDER"
+chmod +x $CACHE_FOLDER
 echo "$(date +"%T.%3N") START" >$LOGS
 
 echo "CMD $CMD" >>$LOGS
@@ -701,6 +702,7 @@ fi
 #echo "RUN: $BASH_FILE" >> $LOGS
 [ -r $END_FILE ] && cat $END_FILE >> $BASH_FILE
 
+chmod +x $BASH_FILE
 ./$BASH_FILE
 echo "END: $BASH_FILE" >>$LOGS
 
